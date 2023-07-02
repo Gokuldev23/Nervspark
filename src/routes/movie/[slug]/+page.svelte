@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
+
 	let movieData = '';
 	let show = '';
 	console.log(show);
@@ -12,15 +13,22 @@
 			);
 			const data = await res.json();
 			console.log(data);
-			movieData = data.results.filter((res) => res.backdrop_path !== null);
+			movieData = data.results
+				.filter((res) => res.backdrop_path !== null)
+				.map((movie) => ({
+					...movie,
+					showDetails: false
+				}));
 		}
 		details();
 	});
 </script>
 
-<div class="grid grid-flow-col gap-8 px-16 py-8">
+<div class="flex flex-row flex-wrap gap-8 px-16 py-8">
 	{#each movieData as movie}
-		<div class="w-80 bg-violet-300 p-2 pb-1 border border-stone-500 rounded-xl overflow-y-hidden">
+		<div
+			class="w-80 bg-violet-300 p-2 flex-none h-fit pb-1 border border-stone-500 rounded-xl overflow-y-hidden"
+		>
 			<img
 				class="w-full rounded-lg"
 				src="https://image.tmdb.org/t/p/w500/{movie.backdrop_path}"
@@ -39,7 +47,7 @@
 						>{movie.vote_average}</span
 					>
 				</p>
-				{#if show === movie.id}
+				{#if movie.showDetails}
 					<div transition:slide class="space-y-2">
 						<p class="text-lg text-slate-500 flex justify-between">
 							Release date: <span class="text-slate-700 font-medium">{movie.release_date}</span>
@@ -66,13 +74,15 @@
 				{/if}
 			</div>
 			<div
-				on:mousedown={() => (show = movie.id)}
+				on:mousedown={() => ((movie.showDetails = !movie.showDetails), console.log(movieData))}
 				class="flex bg-violet-900 rounded-b-xl h-4 justify-center items-center relative w-full bottom-0 z-10"
 			>
 				<img
 					src="/images/downArrow.svg"
 					alt="downarrow"
-					class="w-3 h-3 transition-all duration-500 {show ? 'rotate-180' : 'rotate-0'}"
+					class="w-3 h-3 transition-all duration-500 {movie.showDetails
+						? 'rotate-180'
+						: 'rotate-0'}"
 				/>
 			</div>
 		</div>
